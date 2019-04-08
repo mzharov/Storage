@@ -2,19 +2,15 @@ package system.storage;
 
 import system.customer.Customer;
 import system.purchase.Purchase;
-
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Storage {
 
-    private static AtomicInteger productsCount = new AtomicInteger(1000);
+    private static AtomicInteger productsCount = new AtomicInteger(5000);
 
     public static int getProductsCount() {return productsCount.get();}
     public static void changeProductsCount(Integer count) {
-        productsCount = new AtomicInteger(productsCount.get() - count);
+        productsCount.addAndGet(count);
     }
 
     private static boolean isInteger(String parameter) {

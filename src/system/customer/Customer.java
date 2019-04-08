@@ -5,6 +5,7 @@ import system.storage.Storage;
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Customer implements Runnable {
 
@@ -26,7 +27,7 @@ public class Customer implements Runnable {
             if(nProducts > count) {
                 nProducts = count;
             }
-            Storage.changeProductsCount(nProducts);
+            Storage.changeProductsCount(-nProducts);
             products += nProducts;
             ++purchases;
         }
@@ -46,7 +47,8 @@ public class Customer implements Runnable {
 
     @Override
     public String toString() {
-        return "Покупателем [" + id + "] сделано покупок: " + purchases + "; приобретено товаров: " + products;
+        return "Покупателем [" + id + "] сделано покупок: " + purchases + "; приобретено товаров: "
+                + products;
     }
 
     public int getProducts() {
