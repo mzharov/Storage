@@ -1,17 +1,21 @@
 package system.purchase;
 
 import system.customer.Customer;
-import system.storage.Storage;
 
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Класс, для реализации циклов покупок
+ */
 public class Purchase implements Runnable {
 
-    private final List<Customer> customers = new LinkedList<>(); //Список покупателей
+    private final List<Customer> customers = new LinkedList<>();    //Список покупателей
+    private final AtomicInteger productsCount;                      //Количество товаров на складе
 
     /**
      * Создается барьерная переменная и покупатели добавляются в список после инициализации,
@@ -19,10 +23,11 @@ public class Purchase implements Runnable {
      * которого будет выполняться после завершения цикла (в данном случае сам объект Purchase)
      * @param customersCount количество покупателей
      */
-    public Purchase(int customersCount) {
+    public Purchase(int customersCount, AtomicInteger productsCount) {
+        this.productsCount = productsCount;
         CyclicBarrier barrier = new CyclicBarrier(customersCount, this);
         for(int iterator = 0; iterator < customersCount; iterator++) {
-            customers.add(new Customer(iterator+1, barrier));
+            customers.add(new Customer(iterator+1, barrier, productsCount));
         }
     }
 
@@ -32,7 +37,7 @@ public class Purchase implements Runnable {
      */
     @Override
     public void run() {
-        if(Storage.getProductsCount() > 0) {
+        if(productsCount.get() > 0) {
             ExecutorService executor = Executors.newFixedThreadPool(customers.size());
             for (Customer customer : customers) {
                 executor.execute(customer);

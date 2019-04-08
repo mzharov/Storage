@@ -1,46 +1,49 @@
 package system.customer;
 
-import system.storage.Storage;
-
 import java.util.Random;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Класс "покупателя"
  */
 public class Customer implements Runnable {
 
-    private int purchases;                  //Количество совершенных покупок
-    private int products;                   //Количество купленных товаров
-    private final int id;                   //Номер покупателя
-    private final CyclicBarrier barrier;    //Барьер для равномерного распределния покупок
+    private int purchases;                      //Количество совершенных покупок
+    private int products;                       //Количество купленных товаров
+    private final int id;                       //Номер покупателя
+    private final CyclicBarrier barrier;        //Барьер для равномерного распределния покупок
+    private final AtomicInteger productsCount;  // Количество товара на складе
 
     private final static
-    Random random = new Random();           //Генератор случайных чисел для реализации кол-ва покупок от 1 до 10
+    Random random = new Random();               //Генератор случайных чисел
 
-    public Customer(int id, CyclicBarrier barrier) {
+    public Customer(int id, CyclicBarrier barrier, AtomicInteger productsCount) {
         this.id = id;
         this.barrier = barrier;
+        this.productsCount = productsCount;
     }
 
     /**
-     * Синхронизированный метод для совершения покупки.
-     * Если на складе ещеостался товар, то проверяется его количество
+     * Метод для совершения покупки.
+     * Если на складе еще остался товар, то проверяется его количество
      * 1) если его меньше, чем кол-во товаров, которые покупатель хочет купить, то ему достается остаток;
      * 2) если его достаточно, то из кол-ва товаров на складе вычитается кол-во, которое покупатель хочет купить;
      * 3) если ничего не осталось, ничего не изменяется.
      */
-    private synchronized void makePurchase() {
-        int nProducts = random.nextInt(10+1);
-        int count  = Storage.getProductsCount();
-        if(count > 0) {
-            if(nProducts > count) {
-                nProducts = count;
+    private void makePurchase() {
+        synchronized (productsCount) {
+            int nProducts = random.nextInt(10) + 1;
+            int count  = productsCount.get();
+            if(count > 0) {
+                if(nProducts > count) {
+                    nProducts = count;
+                }
+                productsCount.addAndGet(-nProducts);
+                products += nProducts;
+                ++purchases;
             }
-            Storage.subProductsCount(nProducts);
-            products += nProducts;
-            ++purchases;
         }
     }
 

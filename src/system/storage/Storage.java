@@ -5,20 +5,9 @@ import system.purchase.Purchase;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-public class Storage {
+class Storage {
 
-    private final static
-    AtomicInteger productsCount = new AtomicInteger(1000); //Количество товаров на складе
-
-    public static int getProductsCount() {return productsCount.get();}
-
-    /**
-     * Изменение количества товаров на складе (вычитание из текущего количества)
-     * @param count количество товаров, которые куплены
-     */
-    public static void subProductsCount(Integer count) {
-        productsCount.addAndGet(-count);
-    }
+    private static final int STORAGE_SIZE = 1000; //Размер склада
 
     /**
      * Проверка начального аргумента, является ли он числом
@@ -37,10 +26,10 @@ public class Storage {
 
 
     public static void main(String[] args) {
-
         if(args.length !=0) {
             if(isInteger(args[0])) {
-                Purchase purchase = new Purchase(Integer.parseInt(args[0]));
+                Purchase purchase = new Purchase(Integer.parseInt(args[0]),
+                        new AtomicInteger(STORAGE_SIZE));
                 purchase.run();
             }
         } else {
