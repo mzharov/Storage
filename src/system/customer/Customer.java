@@ -19,27 +19,23 @@ public class Customer implements Runnable {
         this.barrier = barrier;
     }
 
-
-    private synchronized int makePurchase() {
+    private synchronized void makePurchase() {
         int nProducts = random.nextInt(10+1);
         int count  = Storage.getProductsCount();
-        if(count <= 0) return 0;
-        if(nProducts > count) {
-            nProducts = count;
+        if(count > 0) {
+            if(nProducts > count) {
+                nProducts = count;
+            }
+            Storage.changeProductsCount(nProducts);
+            products += nProducts;
+            ++purchases;
         }
-
-        Storage.setProductsCount(nProducts);
-        return nProducts;
     }
 
     @Override
     public void run() {
 
-        int nPurchase = makePurchase();
-        if(nPurchase > 0) {
-            products +=nPurchase;
-            ++purchases;
-        }
+        makePurchase();
 
         try {
             barrier.await();

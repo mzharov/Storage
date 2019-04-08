@@ -10,11 +10,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Storage {
 
-    private static volatile AtomicInteger productsCount = new AtomicInteger(1000);
+    private static AtomicInteger productsCount = new AtomicInteger(1000);
 
     public static int getProductsCount() {return productsCount.get();}
-    public static void setProductsCount(Integer count) {
-        productsCount.addAndGet(-count);
+    public static void changeProductsCount(Integer count) {
+        productsCount = new AtomicInteger(productsCount.get() - count);
     }
 
     private static boolean isInteger(String parameter) {
@@ -39,10 +39,15 @@ public class Storage {
                         + purchase.getCustomers().stream()
                         .map(Customer::getProducts)
                         .reduce(0, Integer::sum));
+
+                int count = 0;
+                for(Customer customer : purchase.getCustomers()) {
+                    count +=customer.getProducts();
+                }
+                System.out.println(count);
             }
         } else {
             System.out.println("Не указано количество покупателей в параметрах запуска программы");
         }
-        System.out.println("Программа закончена");
     }
 }

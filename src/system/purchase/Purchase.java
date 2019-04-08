@@ -12,11 +12,8 @@ import java.util.concurrent.Executors;
 public class Purchase implements Runnable {
 
     private List<Customer> customers = new LinkedList<>();
-    private ExecutorService executor = Executors.newCachedThreadPool();
-    private Integer productsCount;
 
-    public Purchase(int customersCount, Integer productsCount) {
-        this.productsCount = productsCount;
+    public Purchase(int customersCount) {
         CyclicBarrier barrier = new CyclicBarrier(customersCount, this);
         for(int iterator = 0; iterator < customersCount; iterator++) {
             customers.add(new Customer(iterator+1, barrier));
@@ -26,9 +23,11 @@ public class Purchase implements Runnable {
     @Override
     public void run() {
         if(Storage.getProductsCount() > 0) {
+            ExecutorService executor = Executors.newFixedThreadPool(customers.size());
             for (Customer customer : customers) {
                 executor.execute(customer);
             }
+            executor.shutdown();
         }
     }
 
@@ -36,7 +35,4 @@ public class Purchase implements Runnable {
         return customers;
     }
 
-    public Integer getProductsCount() {
-        return productsCount;
-    }
 }
