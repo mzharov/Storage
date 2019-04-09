@@ -2,43 +2,37 @@ package system.storage;
 
 import system.purchase.Purchase;
 
-import java.util.concurrent.atomic.AtomicInteger;
 
+public class Storage implements StorageInterface{
 
-class Storage {
+    private static int storageProducts = 1000;
 
-    private static final int STORAGE_SIZE = 1000; //Размер склада
-
-    /**
-     * Проверка начального аргумента, является ли он числом
-     * @param parameter строка - входной параметр программы
-     * @return true - если в строке хранится число, false - иначе
-     */
-    private static boolean isInteger(String parameter) {
+    @Override
+    public void start(int customersCount) {
+        Thread purchaseThread = new Thread(new Purchase(customersCount, this));
+        purchaseThread.start();
         try {
-            Integer.parseInt(parameter);
-            return true;
-        } catch (NumberFormatException e) {
-            System.out.println("Указанный входной параметр не является числом");
-            return false;
+            purchaseThread.join();
+        } catch (InterruptedException e) {
+            System.out.println("Ошибка в ходе работы потока");
         }
     }
 
-
-    public static void main(String[] args) {
-        if(args.length !=0) {
-            if(isInteger(args[0])) {
-                Thread purchaseThread = new Thread(new Purchase(Integer.parseInt(args[0]),
-                        new AtomicInteger(STORAGE_SIZE)));
-                purchaseThread.start();
-                try {
-                    purchaseThread.join();
-                } catch (InterruptedException e) {
-                    System.out.println("Ошибка в ходе работы потока");
-                }
+    @Override
+    public synchronized int makePurchase(int productsCount) {
+        if(storageProducts > 0) {
+            if(productsCount > storageProducts) {
+                productsCount = storageProducts;
             }
+            storageProducts -=productsCount;
+            return productsCount;
         } else {
-            System.out.println("Не указано количество покупателей в параметрах запуска программы");
+            return 0;
         }
+    }
+
+    @Override
+    public int getProductsBalance() {
+        return storageProducts;
     }
 }

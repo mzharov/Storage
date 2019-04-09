@@ -1,6 +1,7 @@
 package system.purchase;
 
 import system.customer.Customer;
+import system.storage.StorageInterface;
 
 import java.util.IntSummaryStatistics;
 import java.util.LinkedList;
@@ -8,7 +9,6 @@ import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class Purchase implements Runnable {
 
     private final List<Customer> customers = new LinkedList<>();    //Список покупателей
-    private final AtomicInteger productsCount;                      //Количество товаров на складе
+    private final StorageInterface storage;                         //Интерфейс для обращения к магазину
 
     /**
      * Создается барьерная переменная и покупатели добавляются в список после инициализации,
@@ -25,11 +25,11 @@ public class Purchase implements Runnable {
      * которого будет выполняться после завершения цикла (в данном случае сам объект Purchase)
      * @param customersCount количество покупателей
      */
-    public Purchase(int customersCount, AtomicInteger productsCount) {
-        this.productsCount = productsCount;
+    public Purchase(int customersCount, StorageInterface storage) {
+        this.storage = storage;
         CyclicBarrier barrier = new CyclicBarrier(customersCount, this);
         for(int iterator = 0; iterator < customersCount; iterator++) {
-            customers.add(new Customer(iterator+1, barrier, productsCount));
+            customers.add(new Customer(iterator+1, barrier, storage));
         }
     }
 
@@ -39,7 +39,7 @@ public class Purchase implements Runnable {
      */
     @Override
     public void run() {
-        if (productsCount.get() > 0) {
+        if (storage.getProductsBalance() > 0) {
             ExecutorService executor = Executors.newFixedThreadPool(customers.size());
             for (Customer customer : customers) {
                 executor.execute(customer);
