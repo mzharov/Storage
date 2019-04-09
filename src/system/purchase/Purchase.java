@@ -18,6 +18,7 @@ public class Purchase implements Runnable {
 
     private final List<Customer> customers = new LinkedList<>();    //Список покупателей
     private final StorageInterface storage;                         //Интерфейс для обращения к магазину
+    private ExecutorService executor;
 
     /**
      * Создается барьерная переменная и покупатели добавляются в список после инициализации,
@@ -27,10 +28,11 @@ public class Purchase implements Runnable {
      */
     public Purchase(int customersCount, StorageInterface storage) {
         this.storage = storage;
-        CyclicBarrier barrier = new CyclicBarrier(customersCount, this);
+        CyclicBarrier barrier = new CyclicBarrier(customersCount);
         for(int iterator = 0; iterator < customersCount; iterator++) {
             customers.add(new Customer(iterator+1, barrier, storage));
         }
+        executor = Executors.newFixedThreadPool(customers.size());
     }
 
     /**
@@ -39,35 +41,35 @@ public class Purchase implements Runnable {
      */
     @Override
     public void run() {
-        if (storage.getProductsBalance() > 0) {
-            ExecutorService executor = Executors.newFixedThreadPool(customers.size());
+
+        //Пока на складе не закончатся товары, совершать покупки
+        while (storage.getProductsBalance() > 0) {
             for (Customer customer : customers) {
                 executor.execute(customer);
             }
-            executor.shutdown();
+        }
+        executor.shutdown();
+        
+        //Вывод списка результатов закупки
+        System.out.println("Результат:");
+        customers.forEach(customer -> System.out.println(customer.toString()));
+        System.out.println("Всего товаров куплено: " +
+                customers.stream()
+                        .map(Customer::getProducts)
+                        .reduce(0, Integer::sum));
+
+        //Вывод дополнительной информации
+        IntSummaryStatistics stats = customers.stream()
+                .map(Customer::getPurchases)
+                .collect(Collectors.summarizingInt(Integer::intValue));
+        int min = stats.getMin();
+        int max = stats.getMax();
+
+        if(min == max) {
+            System.out.println("Количество закупок покупателей одинаково: " + max);
         } else {
-
-            //Вывод списка результатов закупки
-            System.out.println("Результат:");
-            customers.forEach(customer -> System.out.println(customer.toString()));
-            System.out.println("Всего товаров куплено: " +
-                    customers.stream()
-                            .map(Customer::getProducts)
-                            .reduce(0, Integer::sum));
-
-            //Вывод дополнительной информации
-            IntSummaryStatistics stats = customers.stream()
-                    .map(Customer::getPurchases)
-                    .collect(Collectors.summarizingInt(Integer::intValue));
-            int min = stats.getMin();
-            int max = stats.getMax();
-
-            if(min == max) {
-                System.out.println("Количество закупок покупателей одинаково: " + max);
-            } else {
-                System.out.println("Минимальное и максимальное количество закупок всех покупателей: " +
-                        "мин. = " + stats.getMin() + "; макс. = " + stats.getMax());
-            }
+            System.out.println("Минимальное и максимальное количество закупок всех покупателей: " +
+                    "мин. = " + stats.getMin() + "; макс. = " + stats.getMax());
         }
     }
 }

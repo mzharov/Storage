@@ -24,7 +24,7 @@ public class Storage implements StorageInterface{
             if(productsCount > storageProducts) {
                 productsCount = storageProducts;
             }
-            storageProducts -=productsCount;
+            storageProducts -= productsCount;
             return productsCount;
         } else {
             return 0;
