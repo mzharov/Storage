@@ -47,7 +47,7 @@ public class Purchase implements Runnable {
             executor.shutdown();
         } else {
 
-            //Вывод списка езультатов закупки
+            //Вывод списка результатов закупки
             System.out.println("Результат:");
             customers.forEach(customer -> System.out.println(customer.toString()));
             System.out.println("Всего товаров куплено: " +
