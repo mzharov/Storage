@@ -18,7 +18,7 @@ public class Purchase implements Runnable {
 
     private final List<Customer> customers = new LinkedList<>();    //Список покупателей
     private final StorageInterface storage;                         //Интерфейс для обращения к магазину
-    private ExecutorService executor;
+    private final ExecutorService executor;
 
     /**
      * Создается барьерная переменная и покупатели добавляются в список после инициализации,
@@ -49,7 +49,7 @@ public class Purchase implements Runnable {
             }
         }
         executor.shutdown();
-        
+
         //Вывод списка результатов закупки
         System.out.println("Результат:");
         customers.forEach(customer -> System.out.println(customer.toString()));
