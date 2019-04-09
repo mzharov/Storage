@@ -13,7 +13,7 @@ public class Customer implements Runnable {
     private int purchases;                      //Количество совершенных покупок
     private int products;                       //Количество купленных товаров
     private final int id;                       //Номер покупателя
-    private final CyclicBarrier barrier;        //Барьер для равномерного распределния покупок
+    private final CyclicBarrier barrier;        //Барьер для равномерного распределения покупок
     private final AtomicInteger productsCount;  // Количество товара на складе
 
     private final static
@@ -52,7 +52,6 @@ public class Customer implements Runnable {
      */
     @Override
     public void run() {
-
         makePurchase();
         try {
             barrier.await();
@@ -70,4 +69,5 @@ public class Customer implements Runnable {
     public int getProducts() {
         return products;
     }
+    public int getPurchases() {return purchases;}
 }

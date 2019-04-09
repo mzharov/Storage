@@ -28,9 +28,14 @@ class Storage {
     public static void main(String[] args) {
         if(args.length !=0) {
             if(isInteger(args[0])) {
-                Purchase purchase = new Purchase(Integer.parseInt(args[0]),
-                        new AtomicInteger(STORAGE_SIZE));
-                purchase.run();
+                Thread purchaseThread = new Thread(new Purchase(Integer.parseInt(args[0]),
+                        new AtomicInteger(STORAGE_SIZE)));
+                purchaseThread.start();
+                try {
+                    purchaseThread.join();
+                } catch (InterruptedException e) {
+                    System.out.println("Ошибка в ходе работы потока");
+                }
             }
         } else {
             System.out.println("Не указано количество покупателей в параметрах запуска программы");

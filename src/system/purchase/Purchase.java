@@ -2,12 +2,14 @@ package system.purchase;
 
 import system.customer.Customer;
 
+import java.util.IntSummaryStatistics;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Класс, для реализации циклов покупок
@@ -37,20 +39,35 @@ public class Purchase implements Runnable {
      */
     @Override
     public void run() {
-        if(productsCount.get() > 0) {
+        if (productsCount.get() > 0) {
             ExecutorService executor = Executors.newFixedThreadPool(customers.size());
             for (Customer customer : customers) {
                 executor.execute(customer);
             }
             executor.shutdown();
         } else {
+
+            //Вывод списка езультатов закупки
             System.out.println("Результат:");
             customers.forEach(customer -> System.out.println(customer.toString()));
-            System.out.println("Всего товаров куплено: "
-                    + customers.stream()
-                    .map(Customer::getProducts)
-                    .reduce(0, Integer::sum));
+            System.out.println("Всего товаров куплено: " +
+                    customers.stream()
+                            .map(Customer::getProducts)
+                            .reduce(0, Integer::sum));
+
+            //Вывод дополнительной информации
+            IntSummaryStatistics stats = customers.stream()
+                    .map(Customer::getPurchases)
+                    .collect(Collectors.summarizingInt(Integer::intValue));
+            int min = stats.getMin();
+            int max = stats.getMax();
+
+            if(min == max) {
+                System.out.println("Количество закупок покупателей одинаково: " + max);
+            } else {
+                System.out.println("Минимальное и максимальное количество закупок всех покупателей: " +
+                        "мин. = " + stats.getMin() + "; макс. = " + stats.getMax());
+            }
         }
     }
-
 }
