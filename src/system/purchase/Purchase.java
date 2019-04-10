@@ -62,6 +62,7 @@ public class Purchase implements Runnable {
         IntSummaryStatistics stats = customers.stream()
                 .map(Customer::getPurchases)
                 .collect(Collectors.summarizingInt(Integer::intValue));
+
         int min = stats.getMin();
         int max = stats.getMax();
 

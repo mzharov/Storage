@@ -5,7 +5,7 @@ import system.purchase.Purchase;
 
 public class Storage implements StorageInterface{
 
-    private static int storageProducts = 1000;
+    private int storageProducts = 1000;
 
     @Override
     public void start(int customersCount) {
